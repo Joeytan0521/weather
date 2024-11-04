@@ -7,8 +7,10 @@
     android:layout_margin="10dp"
     card_view:cardCornerRadius="10dp"
     card_view:cardElevation="3dp"
-    android:foreground="@drawable/state_cardview_background">
+    android:foreground="@drawable/state_cardview_background"
+    android:background="@color/white">
 
+    <!--need to put state only -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -16,38 +18,15 @@
 
         <TextView
             android:id="@+id/state"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="State"
             android:textSize="20sp"
-            android:textStyle="bold
-"
+            android:textStyle="bold"
             android:gravity="center"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            card_view:layout_constraintWidth_percent="0.3"/>
-
-        <TextView
-            android:id="@+id/date"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            card_view:layout_constraintWidth_percent="0.4"
-            card_view:layout_constraintLeft_toRightOf="@id/state"
-            card_view:layout_constraintTop_toTopOf="parent"
-            android:gravity="center"
-            android:text="Date"
-            android:textSize="20sp"/>
-
-        <TextView
-            android:id="@+id/temperature"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            card_view:layout_constraintWidth_percent="0.3"
-            card_view:layout_constraintLeft_toRightOf="@id/date"
-            card_view:layout_constraintTop_toTopOf="parent"
-            android:gravity="center"
-            android:text="Temp"
-            android:textSize="20sp"/>
+            android:textColor="@color/black"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

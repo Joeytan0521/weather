@@ -24,14 +24,15 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.ViewHolder>{
     @NonNull
     @Override
     public ChildAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate((R.layout.recyclerview_child_layout), null, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate((R.layout.recyclerview_child_layout), parent, false);
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ChildAdapter.ViewHolder holder, int position) {
-        holder.tv.setText(childModelClassList.get(position).period);
+        holder.tv.setText("Temperature: " + childModelClassList.get(position).getValue());
     }
+
 
     @Override
     public int getItemCount() {

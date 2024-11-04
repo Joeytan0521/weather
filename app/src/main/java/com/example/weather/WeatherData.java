@@ -14,6 +14,10 @@ public class WeatherData {
         this.temp = temp;
     }
 
+    public WeatherData(String state) {
+        this.state = state;
+    }
+
     public String getState() {
         return state;
     }

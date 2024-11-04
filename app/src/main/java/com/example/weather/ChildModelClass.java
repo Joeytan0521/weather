@@ -2,9 +2,13 @@ package com.example.weather;
 
 public class ChildModelClass {
 
-    String period;
+    String value;
 
-    public ChildModelClass(String period) {
-        this.period = period;
+    public ChildModelClass(String value) {
+        this.value = value;
+    }
+
+    public String getValue() {
+        return value;
     }
 }

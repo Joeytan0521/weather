@@ -1,5 +1,6 @@
 package com.example.weather;
 
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,9 +27,14 @@ public class StateCardViewAdapter extends RecyclerView.Adapter<StateCardViewAdap
 
     @Override
     public void onBindViewHolder(@NonNull StateCardViewAdapter.ViewHolder holder, int position) {
-        holder.state.setText(weatherDataList.get(position).getState());
-        holder.date.setText(weatherDataList.get(position).getDate());
-        holder.temp.setText(weatherDataList.get(position).getTemp());
+        WeatherData weatherData = weatherDataList.get(position);
+        holder.state.setText(weatherData.getState());
+
+        holder.state.setOnClickListener(v -> {
+            Intent intent = new Intent(v.getContext(), StateDetailActivity.class);
+            intent.putExtra("STATE_NAME", weatherData.getState());
+            v.getContext().startActivity(intent);
+        });
     }
 
     @Override
@@ -38,15 +44,11 @@ public class StateCardViewAdapter extends RecyclerView.Adapter<StateCardViewAdap
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public TextView state;
-        public TextView date;
-        public TextView temp;
 
 
         public ViewHolder(View itemView) {
             super(itemView);
             state = itemView.findViewById(R.id.state);
-            date = itemView.findViewById(R.id.date);
-            temp = itemView.findViewById(R.id.temperature);
         }
     }
 

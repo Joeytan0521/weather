@@ -4,12 +4,15 @@ import java.util.List;
 
 public class ParentModelClass {
 
-    String title;
+    String date;
     List<ChildModelClass> childModelClassList;
 
-
-    public ParentModelClass(String title, List<ChildModelClass> childModelClassList) {
-        this.title = title;
+    public ParentModelClass(String date, List<ChildModelClass> childModelClassList) {
+        this.date = date;
         this.childModelClassList = childModelClassList;
+    }
+
+    public String getDate() {
+        return date;
     }
 }
