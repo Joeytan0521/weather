@@ -47,13 +47,13 @@
         android:layout_marginEnd="30dp"/>
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/cancelAddState"
+        android:id="@+id/cancelAddStateButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/chooseStateSpinner"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintRight_toLeftOf="@id/confirmAddState"
+        app:layout_constraintRight_toLeftOf="@id/confirmAddStateButton"
         android:text="Cancel"
         android:backgroundTint="#809fff"
         android:textColor="#FFF6E5"
@@ -61,12 +61,12 @@
         android:layout_marginTop="10dp" />
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/confirmAddState"
+        android:id="@+id/confirmAddStateButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/chooseStateSpinner"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintLeft_toRightOf="@id/cancelAddState"
+        app:layout_constraintLeft_toRightOf="@id/cancelAddStateButton"
         android:text="Add State"
         android:layout_marginEnd="10dp"
         android:layout_marginLeft="20dp"

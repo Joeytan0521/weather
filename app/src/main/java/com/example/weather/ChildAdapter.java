@@ -30,7 +30,7 @@ public class ChildAdapter extends RecyclerView.Adapter<ChildAdapter.ViewHolder>{
 
     @Override
     public void onBindViewHolder(@NonNull ChildAdapter.ViewHolder holder, int position) {
-        holder.tv.setText("Temperature: " + childModelClassList.get(position).getValue());
+        holder.tv.setText("Weather: " + childModelClassList.get(position).getValue());
     }
 
 

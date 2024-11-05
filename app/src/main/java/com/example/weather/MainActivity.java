@@ -17,10 +17,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -49,6 +51,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     TextView error;
     FloatingActionButton floatingActionButton;
     private Map<String, String> stateLocationIds;
+    CoordinatorLayout coordinatorLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,31 +97,45 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                 AlertDialog alertDialog = dialogBuilder.create();
 
-                Button cancelAddState = dialogView.findViewById(R.id.cancelAddState);
-                Button confirmAddState = dialogView.findViewById(R.id.confirmAddState);
+                Button cancelAddStateButton = dialogView.findViewById(R.id.cancelAddStateButton);
+                Button confirmAddStateButton = dialogView.findViewById(R.id.confirmAddStateButton);
                 Spinner chooseStateSpinner = dialogView.findViewById(R.id.chooseStateSpinner);
-                String[] states = {"Putrajaya", "Perlis", "Sabah", "Sarawak", "Selangor", "Terengganu"};
+                String[] states = {"KUALA KRAI", "LOJING", "MACHANG", "PASIR PUTEH", "TANAH MERAH", "TUMPAT", "KOTA BHARU", "JELI", "GUA MUSANG", "BACHOK", "RANTAU PANJANG"
+                        , "PASIR MAS", "SETAPAK", "KUALA LUMPUR", "AMPANG", "BANGSAR", "BUKIT BINTANG", "CHERAS", "JALAN DUTA", "KEPONG"};
 
                 ArrayAdapter<String> stateAdapter = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_item, states);
                 stateAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 chooseStateSpinner.setAdapter(stateAdapter);
 
-                cancelAddState.setOnClickListener(new View.OnClickListener() {
+                cancelAddStateButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         alertDialog.dismiss();
                     }
                 });
 
-                confirmAddState.setOnClickListener(new View.OnClickListener() {
+                confirmAddStateButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         String selectedState = chooseStateSpinner.getSelectedItem().toString();
-                        fetchWeatherDataForState(selectedState);
+
+                        boolean isStateAlreadyAdded = false;
+                        for (WeatherData data : weatherDataList) {
+                            if (data.getState().equalsIgnoreCase(selectedState)) {
+                                isStateAlreadyAdded = true;
+                                break;
+                            }
+                        }
+
+                        if (isStateAlreadyAdded) {
+                            Toast.makeText(MainActivity.this, "State already added!", Toast.LENGTH_SHORT).show();
+                        } else {
+                            fetchWeatherDataForState(selectedState);
+                        }
+
                         alertDialog.dismiss();
                     }
                 });
-
                 alertDialog.show();
             }
         });
@@ -128,27 +145,43 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private void initializeStateLocationIds() {
         stateLocationIds = new HashMap<>();
-        stateLocationIds.put("Putrajaya", "LOCATION:12");
-        stateLocationIds.put("Perlis", "LOCATION:11");
-        stateLocationIds.put("Sabah", "LOCATION:13");
-        stateLocationIds.put("Sarawak", "LOCATION:14");
-        stateLocationIds.put("Selangor", "LOCATION:15");
-        stateLocationIds.put("Terengganu", "LOCATION:16");
+        stateLocationIds.put("KUALA KRAI", "LOCATION:3");
+        stateLocationIds.put("MACHANG", "LOCATION:3");
+        stateLocationIds.put("LOJING", "LOCATION:3");
+        stateLocationIds.put("PASIR PUTEH", "LOCATION:3");
+        stateLocationIds.put("TANAH MERAH", "LOCATION:3");
+        stateLocationIds.put("TUMPAT", "LOCATION:3");
+        stateLocationIds.put("KOTA BHARU", "LOCATION:3");
+        stateLocationIds.put("JELI", "LOCATION:3");
+        stateLocationIds.put("GUA MUSANG", "LOCATION:3");
+        stateLocationIds.put("BACHOK", "LOCATION:3");
+        stateLocationIds.put("RANTAU PANJANG", "LOCATION:3");
+        stateLocationIds.put("PASIR MAS", "LOCATION:3");
+
+        stateLocationIds.put("SETAPAK", "LOCATION:4");
+        stateLocationIds.put("KUALA LUMPUR", "LOCATION:4");
+        stateLocationIds.put("AMPANG", "LOCATION:4");
+        stateLocationIds.put("BANGSAR", "LOCATION:4");
+        stateLocationIds.put("BUKIT BINTANG", "LOCATION:4");
+        stateLocationIds.put("CHERAS", "LOCATION:4");
+        stateLocationIds.put("JALAN DUTA", "LOCATION:4");
+        stateLocationIds.put("KEPONG", "LOCATION:4");
     }
 
     private void fetchWeatherDataForState(String state) {
-        String locationId = stateLocationIds.get(state);
-        if (locationId == null) {
+        String locationrootid = stateLocationIds.get(state);
+        if (locationrootid == null) {
             Toast.makeText(this, "Invalid state selected", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        String weatherUrl = "https://api.met.gov.my/v2.1/locations?locationcategoryid=" + locationId;
-        new HttpGetWeatherRequest().execute(weatherUrl);
+        String weatherUrl = "https://api.met.gov.my/v2.1/locations?locationcategoryid=TOWN&locationrootid=" + locationrootid;
+        new HttpGetWeatherRequest(weatherUrl, state).execute();
     }
 
+
     private void fetchLocations() {
-        String locationsUrl = "https://api.met.gov.my/v2.1/locations?locationcategoryid=STATE";
+        String locationsUrl = "https://api.met.gov.my/v2.1/locations?locationcategoryid=TOWN";
         new HttpGetLocationRequest().execute(locationsUrl);
     }
 
@@ -205,7 +238,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 JSONArray resultsArray = jsonObject.getJSONArray("results");
 
                 weatherDataList.clear();
-                int limit = Math.min(resultsArray.length(), 10);
+                int limit = Math.min(resultsArray.length(), 30);
                 for (int i = 0; i < limit; i++) {
                     JSONObject resultObject = resultsArray.getJSONObject(i);
                     String locationName = resultObject.getString("name");
@@ -226,6 +259,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     public class HttpGetWeatherRequest extends AsyncTask<String, Void, String> {
+        private final String weatherUrl;
+        private final String state;
+
+        public HttpGetWeatherRequest(String weatherUrl, String state) {
+            this.weatherUrl = weatherUrl;
+            this.state = state;
+        }
+
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -234,10 +275,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         @Override
         protected String doInBackground(String... params) {
-            String stringUrl = params[0];
             String result = null;
             try {
-                URL myUrl = new URL(stringUrl);
+                URL myUrl = new URL(weatherUrl);
                 HttpURLConnection connection = (HttpURLConnection) myUrl.openConnection();
                 connection.setRequestMethod("GET");
                 connection.setReadTimeout(15000);
@@ -277,16 +317,22 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 JSONObject jsonObject = new JSONObject(result);
                 JSONArray resultsArray = jsonObject.getJSONArray("results");
 
+                List<WeatherData> newWeatherDataList = new ArrayList<>();
                 for (int i = 0; i < resultsArray.length(); i++) {
                     JSONObject resultObject = resultsArray.getJSONObject(i);
                     String locationName = resultObject.getString("name");
 
-                    WeatherData weatherData = new WeatherData(locationName);
-                    weatherDataList.add(weatherData);
+                    if (locationName.equalsIgnoreCase(state)) {
+                        WeatherData weatherData = new WeatherData(locationName);
+                        newWeatherDataList.add(weatherData);
+                        break;
+                    }
                 }
 
+                weatherDataList.addAll(newWeatherDataList);
                 filteredWeatherDataList.clear();
                 filteredWeatherDataList.addAll(weatherDataList);
+
                 stateCardViewAdapter.notifyDataSetChanged();
 
             } catch (Exception e) {

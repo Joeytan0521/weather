@@ -30,6 +30,8 @@ public class StateDetailActivity extends AppCompatActivity {
     private TextView error;
     private RecyclerView nestedRecyclerView;
     private TextView stateName;
+    private List<ParentModelClass> parentData = new ArrayList<>();
+    private static final int TOTAL_DAYS = 7;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -43,25 +45,33 @@ public class StateDetailActivity extends AppCompatActivity {
 
         String receivedStateName = getIntent().getStringExtra("STATE_NAME");
         if (receivedStateName != null) {
-            stateName.setText(receivedStateName + " 7-Day Weather Forecast");
-            fetchWeatherData(receivedStateName);
+            stateName.setText(receivedStateName + " 7-Days Weather Forecast");
+            fetchDailyWeatherData(receivedStateName);
         } else {
             error.setText("State name is not provided.");
         }
     }
 
-    private void fetchWeatherData(String stateName) {
+    private void fetchDailyWeatherData(String stateName) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        String todayDate = dateFormat.format(Calendar.getInstance().getTime());
+        Calendar calendar = Calendar.getInstance();
 
-        String weatherUrl = "https://api.met.gov.my/v2.1/data?datasetid=FORECAST&datacategoryid=GENERAL&locationname="
-                + stateName + "&start_date=" + todayDate + "&end_date=" + todayDate;
-
-        new HttpGetWeatherRequest().execute(weatherUrl);
+        for (int i = 0; i < TOTAL_DAYS; i++) {
+            String date = dateFormat.format(calendar.getTime());
+            new HttpGetWeatherRequest(stateName, date).execute();
+            calendar.add(Calendar.DAY_OF_MONTH, 1);
+        }
     }
 
-    // AsyncTask to fetch weather data
-    private class HttpGetWeatherRequest extends AsyncTask<String, Void, String> {
+    private class HttpGetWeatherRequest extends AsyncTask<Void, Void, String> {
+        private final String stateName;
+        private final String date;
+
+        public HttpGetWeatherRequest(String stateName, String date) {
+            this.stateName = stateName;
+            this.date = date;
+        }
+
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -69,11 +79,12 @@ public class StateDetailActivity extends AppCompatActivity {
         }
 
         @Override
-        protected String doInBackground(String... params) {
-            String stringUrl = params[0];
+        protected String doInBackground(Void... params) {
+            String weatherUrl = "https://api.met.gov.my/v2.1/data?datasetid=FORECAST&datacategoryid=GENERAL&locationname="
+                    + stateName + "&start_date=" + date + "&end_date=" + date;
             StringBuilder result = new StringBuilder();
             try {
-                URL myUrl = new URL(stringUrl);
+                URL myUrl = new URL(weatherUrl);
                 HttpURLConnection connection = (HttpURLConnection) myUrl.openConnection();
                 connection.setRequestMethod("GET");
                 connection.setReadTimeout(15000);
@@ -83,7 +94,6 @@ public class StateDetailActivity extends AppCompatActivity {
                 int responseCode = connection.getResponseCode();
                 if (responseCode != HttpURLConnection.HTTP_OK) {
                     Log.e("API Error", "HTTP error code: " + responseCode);
-                    Log.e("API Error", "Response Message: " + connection.getResponseMessage());
                     return null;
                 }
 
@@ -99,20 +109,18 @@ public class StateDetailActivity extends AppCompatActivity {
             return result.toString();
         }
 
-
         @Override
         protected void onPostExecute(String result) {
             progressBar.setVisibility(View.GONE);
 
             if (result == null) {
-                error.setText("Failed to fetch weather data.");
+                error.setText("Failed to fetch weather data for " + date);
                 error.setVisibility(View.VISIBLE);
                 return;
             }
-            Log.d("API Response", result);
 
             List<ChildModelClass> childData = parseWeatherData(result);
-            setupRecyclerView(childData);
+            addWeatherDataToRecyclerView(date, childData);
         }
 
         private List<ChildModelClass> parseWeatherData(String jsonData) {
@@ -128,22 +136,20 @@ public class StateDetailActivity extends AppCompatActivity {
                 }
             } catch (Exception e) {
                 Log.e("JsonParsingError", "Error parsing JSON data: " + e.getMessage());
-                error.setText("Error processing weather data. Check log for details.");
             }
             return childData;
         }
     }
 
-    private void setupRecyclerView(List<ChildModelClass> childData) {
-        List<ParentModelClass> parentData = new ArrayList<>();
-
-        String date = new SimpleDateFormat("yyyy-MM-dd").format(Calendar.getInstance().getTime());
-
+    private void addWeatherDataToRecyclerView(String date, List<ChildModelClass> childData) {
         parentData.add(new ParentModelClass(date, childData));
 
-        nestedRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        ParentAdapter adapter = new ParentAdapter(parentData, this);
-        nestedRecyclerView.setAdapter(adapter);
+        if (nestedRecyclerView.getAdapter() == null) {
+            ParentAdapter adapter = new ParentAdapter(parentData, this);
+            nestedRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+            nestedRecyclerView.setAdapter(adapter);
+        } else {
+            nestedRecyclerView.getAdapter().notifyDataSetChanged();
+        }
     }
-
 }
