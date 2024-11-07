@@ -25,6 +25,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -51,13 +52,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     TextView error;
     FloatingActionButton floatingActionButton;
     private Map<String, String> stateLocationIds;
-    CoordinatorLayout coordinatorLayout;
+    SQLiteDatabase SQLiteDatabase;
+    private List<String> chosenStatesList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_layout);
         initializeStateLocationIds();
+
+        SQLiteDatabase = new SQLiteDatabase(this);
+//        SQLiteDatabase.clearDatabase();
 
         Spinner spinner = findViewById(R.id.spinner);
         spinner.setOnItemSelectedListener(this);
@@ -71,8 +76,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         floatingActionButton = findViewById(R.id.floatingActionButton);
         recyclerView = findViewById(R.id.recyclerView_mainLayout);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        stateCardViewAdapter = new StateCardViewAdapter(filteredWeatherDataList);
+
+        stateCardViewAdapter = new StateCardViewAdapter(filteredWeatherDataList, SQLiteDatabase);
         recyclerView.setAdapter(stateCardViewAdapter);
+        stateCardViewAdapter.notifyDataSetChanged();
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -100,12 +107,20 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 Button cancelAddStateButton = dialogView.findViewById(R.id.cancelAddStateButton);
                 Button confirmAddStateButton = dialogView.findViewById(R.id.confirmAddStateButton);
                 Spinner chooseStateSpinner = dialogView.findViewById(R.id.chooseStateSpinner);
-                String[] states = {"KUALA KRAI", "LOJING", "MACHANG", "PASIR PUTEH", "TANAH MERAH", "TUMPAT", "KOTA BHARU", "JELI", "GUA MUSANG", "BACHOK", "RANTAU PANJANG"
-                        , "PASIR MAS", "SETAPAK", "KUALA LUMPUR", "AMPANG", "BANGSAR", "BUKIT BINTANG", "CHERAS", "JALAN DUTA", "KEPONG"};
 
-                ArrayAdapter<String> stateAdapter = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_item, states);
-                stateAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                chooseStateSpinner.setAdapter(stateAdapter);
+                new HttpGetLocationRequest(chooseStateSpinner).execute("https://api.met.gov.my/v2.1/locations?locationcategoryid=TOWN");
+//                String[] states = {"KUALA KRAI", "LOJING", "MACHANG", "PASIR PUTEH", "TANAH MERAH", "TUMPAT", "KOTA BHARU", "JELI", "GUA MUSANG", "BACHOK", "RANTAU PANJANG"
+//                        , "PASIR MAS", "SETAPAK", "KUALA LUMPUR", "AMPANG", "BANGSAR", "BUKIT BINTANG", "CHERAS", "JALAN DUTA", "KEPONG"};
+
+//                List<WeatherData> names = SQLiteDatabase.readAllData();
+//
+//                List<String> townNames = new ArrayList<>();
+//
+//                for (WeatherData data : names) {
+//                    townNames.add(data.getState());
+//                }
+
+
 
                 cancelAddStateButton.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -130,21 +145,54 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         if (isStateAlreadyAdded) {
                             Toast.makeText(MainActivity.this, "State already added!", Toast.LENGTH_SHORT).show();
                         } else {
+                            chosenStatesList.add(selectedState);
+                            SQLiteDatabase.addTown(selectedState);
                             fetchWeatherDataForState(selectedState);
-                        }
 
+                            Toast.makeText(MainActivity.this, "State added successfully!", Toast.LENGTH_SHORT).show();
+                        }
                         alertDialog.dismiss();
                     }
                 });
                 alertDialog.show();
             }
         });
-
-        fetchLocations();
     }
 
     private void initializeStateLocationIds() {
         stateLocationIds = new HashMap<>();
+        stateLocationIds.put("MUAR", "LOCATION:1");
+        stateLocationIds.put("TANGKAK", "LOCATION:1");
+        stateLocationIds.put("LABIS", "LOCATION:1");
+        stateLocationIds.put("JOHOR BAHRU", "LOCATION:1");
+        stateLocationIds.put("AYER HITAM", "LOCATION:1");
+        stateLocationIds.put("BATU PAHAT", "LOCATION:1");
+        stateLocationIds.put("MERSING", "LOCATION:1");
+        stateLocationIds.put("ISKANDAR PUTERI", "LOCATION:1");
+        stateLocationIds.put("KLUANG", "LOCATION:1");
+        stateLocationIds.put("NUSAJAYA", "LOCATION:1");
+        stateLocationIds.put("KOTA TINGGI", "LOCATION:1");
+        stateLocationIds.put("PONTIAN", "LOCATION:1");
+        stateLocationIds.put("SEGAMAT", "LOCATION:1");
+        stateLocationIds.put("SENAI", "LOCATION:1");
+        stateLocationIds.put("SIMPANG RENGGAM", "LOCATION:1");
+        stateLocationIds.put("YONG PENG", "LOCATION:1");
+        stateLocationIds.put("PASIR GUDANG", "LOCATION:1");
+        stateLocationIds.put("KULAI", "LOCATION:1");
+        stateLocationIds.put("PAGOH", "LOCATION:1");
+
+        stateLocationIds.put("SERDANG", "LOCATION:2");
+        stateLocationIds.put("ALOR STAR", "LOCATION:2");
+        stateLocationIds.put("BALING", "LOCATION:2");
+        stateLocationIds.put("JITRA", "LOCATION:2");
+        stateLocationIds.put("KUALA NERANG", "LOCATION:2");
+        stateLocationIds.put("KULIM", "LOCATION:2");
+        stateLocationIds.put("PENDANG", "LOCATION:2");
+        stateLocationIds.put("POKOK SENA", "LOCATION:2");
+        stateLocationIds.put("SIK", "LOCATION:2");
+        stateLocationIds.put("SUNGAI PETANI", "LOCATION:2");
+        stateLocationIds.put("YAN", "LOCATION:2");
+
         stateLocationIds.put("KUALA KRAI", "LOCATION:3");
         stateLocationIds.put("MACHANG", "LOCATION:3");
         stateLocationIds.put("LOJING", "LOCATION:3");
@@ -180,22 +228,108 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
 
-    private void fetchLocations() {
-        String locationsUrl = "https://api.met.gov.my/v2.1/locations?locationcategoryid=TOWN";
-        new HttpGetLocationRequest().execute(locationsUrl);
-    }
 
-    public class HttpGetLocationRequest extends AsyncTask<String, Void, String> {
+
+//    public class HttpGetLocationRequest extends AsyncTask<String, Void, String> {
+//        @Override
+//        protected void onPreExecute() {
+//            super.onPreExecute();
+//            progressBar.setVisibility(View.VISIBLE);
+//        }
+//
+//        @Override
+//        protected String doInBackground(String... params) {
+//            String stringUrl = params[0];
+//            String result = null;
+//            try {
+//                URL myUrl = new URL(stringUrl);
+//                HttpURLConnection connection = (HttpURLConnection) myUrl.openConnection();
+//                connection.setRequestMethod("GET");
+//                connection.setReadTimeout(15000);
+//                connection.setConnectTimeout(15000);
+//                connection.setRequestProperty("Authorization", "METToken 8d863944cd6fbb68560f6492507d0ceabe192033");
+//
+//                if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+//                    Log.e("API Error", "HTTP error code: " + connection.getResponseCode());
+//                    return null;
+//                }
+//
+//                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+//                StringBuilder stringBuilder = new StringBuilder();
+//                String inputLine;
+//                while ((inputLine = reader.readLine()) != null) {
+//                    stringBuilder.append(inputLine);
+//                }
+//                reader.close();
+//                result = stringBuilder.toString();
+//            } catch (IOException e) {
+//                Log.e("API Error", "IOException: " + e.getMessage());
+//            }
+//            return result;
+//        }
+//
+//        @Override
+//        protected void onPostExecute(String result) {
+//            super.onPostExecute(result);
+//            progressBar.setVisibility(View.GONE);
+//
+//            if (result == null) {
+//                error.setText("Failed to fetch locations.");
+//                return;
+//            }
+//
+//            try {
+//                JSONObject jsonObject = new JSONObject(result);
+//                JSONArray resultsArray = jsonObject.getJSONArray("results");
+//
+////                weatherDataList.clear();
+////                int limit = Math.min(resultsArray.length(), 30);
+////                for (int i = 0; i < limit; i++) {
+////                    JSONObject resultObject = resultsArray.getJSONObject(i);
+////                    String locationName = resultObject.getString("name");
+////
+////                    WeatherData weatherData = new WeatherData(locationName);
+////                    weatherDataList.add(weatherData);
+////                }
+//
+//                weatherDataList.clear();
+//                for (int i = 0; i < resultsArray.length(); i++) {
+//                    JSONObject resultObject = resultsArray.getJSONObject(i);
+//                    String locationName = resultObject.getString("name");
+//
+////                    SQLiteDatabase.addTown(locationName);
+//                    WeatherData weatherData = new WeatherData(locationName);
+//                    weatherDataList.add(weatherData);
+//
+//                }
+//
+//                filteredWeatherDataList.clear();
+//                filteredWeatherDataList.addAll(weatherDataList);
+////                stateCardViewAdapter.notifyDataSetChanged();
+//
+//            } catch (Exception e) {
+//                Log.e("HttpGetLocationRequest", "Error parsing locations: " + e.getMessage());
+//                error.setText("Error parsing locations. Check log for details.");
+//            }
+//        }
+//    }
+
+    public class HttpGetLocationRequest extends AsyncTask<String, Void, List<String>> {
+        private Spinner chooseStateSpinner;
+
+        public HttpGetLocationRequest(Spinner chooseStateSpinner) {
+            this.chooseStateSpinner = chooseStateSpinner;
+        }
+
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
             progressBar.setVisibility(View.VISIBLE);
         }
 
-        @Override
-        protected String doInBackground(String... params) {
+        protected List<String> doInBackground(String... params) {
+            List<String> townNames = new ArrayList<>();
             String stringUrl = params[0];
-            String result = null;
             try {
                 URL myUrl = new URL(stringUrl);
                 HttpURLConnection connection = (HttpURLConnection) myUrl.openConnection();
@@ -216,49 +350,40 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     stringBuilder.append(inputLine);
                 }
                 reader.close();
-                result = stringBuilder.toString();
-            } catch (IOException e) {
-                Log.e("API Error", "IOException: " + e.getMessage());
+
+                String result = stringBuilder.toString();
+                JSONObject jsonObject = new JSONObject(result);
+                JSONArray resultsArray = jsonObject.getJSONArray("results");
+
+                for (int i = 0; i < resultsArray.length(); i++) {
+                    JSONObject resultObject = resultsArray.getJSONObject(i);
+                    String locationName = resultObject.getString("name");
+                    townNames.add(locationName);
+                }
+
+            } catch (IOException | JSONException e) {
+                Log.e("API Error", "Exception: " + e.getMessage());
             }
-            return result;
+            return townNames;
         }
 
         @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
+        protected void onPostExecute(List<String> townNames) {
+            super.onPostExecute(townNames);
             progressBar.setVisibility(View.GONE);
 
-            if (result == null) {
+            if (townNames == null || townNames.isEmpty()) {
                 error.setText("Failed to fetch locations.");
                 return;
             }
 
-            try {
-                JSONObject jsonObject = new JSONObject(result);
-                JSONArray resultsArray = jsonObject.getJSONArray("results");
-
-                weatherDataList.clear();
-                int limit = Math.min(resultsArray.length(), 30);
-                for (int i = 0; i < limit; i++) {
-                    JSONObject resultObject = resultsArray.getJSONObject(i);
-                    String locationName = resultObject.getString("name");
-
-                    WeatherData weatherData = new WeatherData(locationName);
-                    weatherDataList.add(weatherData);
-                }
-
-                filteredWeatherDataList.clear();
-                filteredWeatherDataList.addAll(weatherDataList);
-                stateCardViewAdapter.notifyDataSetChanged();
-
-            } catch (Exception e) {
-                Log.e("HttpGetLocationRequest", "Error parsing locations: " + e.getMessage());
-                error.setText("Error parsing locations. Check log for details.");
-            }
+            ArrayAdapter<String> stateAdapter = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_item, townNames);
+            stateAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            chooseStateSpinner.setAdapter(stateAdapter);
         }
     }
 
-    public class HttpGetWeatherRequest extends AsyncTask<String, Void, String> {
+        public class HttpGetWeatherRequest extends AsyncTask<String, Void, String> {
         private final String weatherUrl;
         private final String state;
 
@@ -332,7 +457,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 weatherDataList.addAll(newWeatherDataList);
                 filteredWeatherDataList.clear();
                 filteredWeatherDataList.addAll(weatherDataList);
-
                 stateCardViewAdapter.notifyDataSetChanged();
 
             } catch (Exception e) {

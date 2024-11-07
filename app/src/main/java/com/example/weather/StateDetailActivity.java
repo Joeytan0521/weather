@@ -24,6 +24,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 
 public class StateDetailActivity extends AppCompatActivity {
     private ProgressBar progressBar;
@@ -53,7 +54,7 @@ public class StateDetailActivity extends AppCompatActivity {
     }
 
     private void fetchDailyWeatherData(String stateName) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
         Calendar calendar = Calendar.getInstance();
 
         for (int i = 0; i < TOTAL_DAYS; i++) {

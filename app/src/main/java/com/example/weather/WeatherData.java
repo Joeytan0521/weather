@@ -7,6 +7,7 @@ public class WeatherData {
     private String state;
     private String date;
     private String temp;
+    private int id;
 
     public WeatherData(String state, String date, String temp) {
         this.state = state;
@@ -45,4 +46,7 @@ public class WeatherData {
         }
     }
 
+    public int getId() {
+        return id;
+    }
 }
